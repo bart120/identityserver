@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace IdentityServer
 {
@@ -14,6 +15,17 @@ namespace IdentityServer
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
+
+            Log.Logger = CreateSerilogLogger();
+        }
+
+        private static Serilog.ILogger CreateSerilogLogger()
+        {
+            var config = new LoggerConfiguration()
+                .Enrich.WithProperty("ApplicationContext", "IdentityServerFormation")
+                .Enrich.FromLogContext()
+                .WriteTo.Console();
+            return config.CreateLogger();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -22,5 +34,7 @@ namespace IdentityServer
                 {
                     webBuilder.UseStartup<Startup>();
                 });
+
+
     }
 }
