@@ -31,10 +31,22 @@ namespace WebApi
                 .AddJwtBearer("Bearer", options =>
                 {
                     options.Authority = "https://localhost:5001";
-                    options.Audience = "apimeteo";
+                    options.RequireHttpsMetadata = false;
+                    options.Audience = "apitest";
+                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
+                        ValidateAudience = false
+                    };
+      
                 });
 
-            //services.AddAuthorization();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("scope policy", p =>
+                {
+                    p.RequireClaim("scope", "api_meteo_scope");
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,7 +66,7 @@ namespace WebApi
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers().RequireAuthorization();
+                endpoints.MapControllers();
             });
         }
     }

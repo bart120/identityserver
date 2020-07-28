@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using IdentityServer.Data;
+using IdentityServer4.Validation;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -31,7 +34,16 @@ namespace IdentityServer
 
             services.AddControllersWithViews();
 
-            var builder = services.AddIdentityServer()
+            services.AddDbContext<AuthenticationDbContext>(o =>
+            {
+                o.UseSqlServer(Configuration.GetConnectionString("IdentityConnection"));
+            });
+
+            var builder = services.AddIdentityServer(options =>
+            {
+                options.UserInteraction.LoginUrl = "/login";
+                options.UserInteraction.LogoutUrl = "/logout";
+            })
                 .AddConfigurationStore(o =>
                 {
                     //o.DefaultSchema = "configuration";
@@ -46,14 +58,8 @@ namespace IdentityServer
                 });
             builder.AddDeveloperSigningCredential();
 
-            /*services.AddAuthentication()
-                .AddOpenIdConnect("oidc", "Formation Identity Server", o =>
-                {
-
-                });*/
-
-
-
+            services.AddAuthentication();
+        
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
