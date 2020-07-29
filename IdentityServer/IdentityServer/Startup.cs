@@ -4,7 +4,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using IdentityServer.Data;
+using IdentityServer.ProfilServices;
 using IdentityServer.Validators;
+using IdentityServer4.Services;
 using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -60,8 +62,11 @@ namespace IdentityServer
             builder.AddResourceOwnerValidator<ROClientValidator>();
             builder.AddDeveloperSigningCredential();
 
+            services.AddTransient<IProfileService, ProfileService>();
+
             services.AddAuthentication();
-        
+
+            services.AddAllowedHosts();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -84,6 +89,7 @@ namespace IdentityServer
 
             app.UseIdentityServer();
 
+            app.UseCors();
             app.UseRouting();
 
             app.UseAuthorization();
@@ -94,6 +100,29 @@ namespace IdentityServer
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+        }
+    }
+
+    static class ServiceCollectionExtensions
+    {
+        public static IServiceCollection AddAllowedHosts(this IServiceCollection services)
+        {
+            List<string> hosts = new List<string> { "http://localhost:4200", "https://mondomane.com", "http://mon.autre.domaine.com" };
+
+
+
+            services.AddCors(o =>
+            {
+                o.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins(hosts.ToArray());
+                    //builder.AllowAnyOrigin(); // *
+                    builder.AllowAnyMethod(); // toutes les methodes HHTP (GET, POST, PUT, DELETE, OPTION ...)
+                    //builder.AllowAnyHeader();
+                });
+            });
+
+            return services;
         }
     }
 }

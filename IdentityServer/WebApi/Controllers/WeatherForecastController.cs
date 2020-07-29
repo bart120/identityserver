@@ -10,6 +10,7 @@ namespace WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    //[Authorize(Policy = "MVCCLIENT")]
     [Authorize]
     public class WeatherForecastController : ControllerBase
     {
@@ -26,8 +27,11 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
+        //[AllowAnonymous]
+        //[Authorize(Policy = "APPMOBILECLIENT")]
         public IEnumerable<WeatherForecast> Get()
         {
+            var user = User;
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
@@ -36,6 +40,20 @@ namespace WebApi.Controllers
                 Summary = Summaries[rng.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        [Authorize(Roles = "ADMIN,AUTRE")]
+        [HttpGet("{id:int}")]
+        public WeatherForecast GetById(int id)
+        {
+            var user = User;
+            var rng = new Random();
+            return new WeatherForecast
+            {
+                Date = DateTime.Now,
+                TemperatureC = rng.Next(-20, 55),
+                Summary = Summaries[rng.Next(Summaries.Length)]
+            };
         }
     }
 }

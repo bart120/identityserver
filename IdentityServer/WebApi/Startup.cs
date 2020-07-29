@@ -37,16 +37,18 @@ namespace WebApi
                     {
                         ValidateAudience = false
                     };
-      
                 });
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("scope policy", p =>
+                /*options.AddPolicy("scope policy", p =>
                 {
                     p.RequireClaim("scope", "api_meteo_scope");
-                });
+                });*/
+                options.AddPolicy("MVCCLIENT", policy => policy.RequireClaim("client_id", new string[] { "mobileapp" }));
             });
+
+            services.AddAllowedHosts();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,6 +61,7 @@ namespace WebApi
 
             app.UseHttpsRedirection();
 
+            app.UseCors();
             app.UseRouting();
 
             app.UseAuthentication();
@@ -68,6 +71,29 @@ namespace WebApi
             {
                 endpoints.MapControllers();
             });
+        }
+    }
+
+    static class ServiceCollectionExtensions
+    {
+        public static IServiceCollection AddAllowedHosts(this IServiceCollection services)
+        {
+            List<string> hosts = new List<string> { "http://localhost:4200", "https://mondomane.com", "http://mon.autre.domaine.com" };
+
+
+
+            services.AddCors(o =>
+            {
+                o.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins(hosts.ToArray());
+                    //builder.AllowAnyOrigin(); // *
+                    builder.AllowAnyMethod(); // toutes les methodes HHTP (GET, POST, PUT, DELETE, OPTION ...)
+                    //builder.AllowAnyHeader();
+                });
+            });
+
+            return services;
         }
     }
 }
