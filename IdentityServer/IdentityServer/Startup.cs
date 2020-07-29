@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using IdentityServer.Data;
+using IdentityServer.Validators;
 using IdentityServer4.Validation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -56,6 +57,7 @@ namespace IdentityServer
                     o.ConfigureDbContext = b => b.UseSqlServer(Configuration.GetConnectionString("IdentityConnection"),
                         sql => sql.MigrationsAssembly(migrationAssemblyName));
                 });
+            builder.AddResourceOwnerValidator<ROClientValidator>();
             builder.AddDeveloperSigningCredential();
 
             services.AddAuthentication();
